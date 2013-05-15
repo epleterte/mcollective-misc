@@ -7,7 +7,7 @@
 #  mc-ssh --with-class /webserver/ -- -l root
 #
 # This will present you with a list of hosts and run:
-#    
+#
 #    ssh <host> -l root
 #
 # on your chosen host.
@@ -24,9 +24,13 @@ HighLine.track_eof = false
 oparser = MCollective::Optionparser.new({}, "filter")
 
 options = oparser.parse{|parser, options|
-    parser.define_head "MCollective iscovery enabled ssh"
+    parser.define_head "MCollective discovery enabled ssh"
     parser.separator ""
     parser.separator "Usage: mc-ssh [filters and options] -- [ssh options]"
+
+    parser.on('--batch', '-b', 'Batch mode') do
+      options[:batch] = true
+    end
 }
 
 if ARGV.length >= 1
@@ -57,11 +61,22 @@ client.discover(options[:filter], options[:disctimeout]).each_with_index do |hos
 end
 
 begin
-    hostname = pick(choices, "").to_i
-    hostname = choices[hostname][1]
+    hostnames = []
+    if options[:batch]
+      choices.each do |i,host|
+        hostnames << host
+      end
+    else
+      hostname = pick(choices, "").to_i
+      hostname = choices[hostname][1]
+      hostnames << hostname
+    end
 
-    puts("Running: ssh #{hostname} #{sshoptions}")
-    exec("ssh #{hostname} #{sshoptions}")
+
+    hostnames.each do |hostname|
+      puts("Running: ssh #{hostname} #{sshoptions}")
+      exec("ssh #{hostname} #{sshoptions}")
+    end
 rescue Exception => e
     puts("Failed to run mc-ssh: #{e}")
     puts e.backtrace
