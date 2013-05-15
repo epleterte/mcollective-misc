@@ -72,10 +72,11 @@ begin
       hostnames << hostname
     end
 
-    hostnames.each do |hostname|
-      puts("Running: ssh #{hostname} #{sshoptions}")
+    puts("Running: ssh <host> #{sshoptions}")
+    hostnames.each do |h|
       #exec("ssh #{hostname} #{sshoptions}")
-      puts %x(ssh #{hostname} #{sshoptions})
+      print "#{h} "
+      puts %x(ssh #{h} #{sshoptions})
     end
 rescue Exception => e
     puts("Failed to run mc-ssh: #{e}")
